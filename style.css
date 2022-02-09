@@ -1,15 +1,57 @@
 body {
-  background-color: #F9FAFC;
+  background-color: #d3d612;
 }
 
 .container {
-  padding-top: 7.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5em;
 }
 
-.converted-value {
+.selected {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.selected select {
+
+  min-width: 160px;
+  padding: .7em;
+  margin: 1em;
+  border: 1px solid #acaf0c;
+  outline-color: #452B4E;
+  border-radius: .5em;
+  
+}
+
+.imput_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.imput_value {
+  width: 330px;
+  padding: .7em;
+  margin: 1em;
+  border: 1px solid #acaf0c;
+  outline-color: #452B4E;
+  border-radius: .5em;
+}
+
+@media (max-width: 550px) {
+  .imput_value {
+    width: 138px;
+  }
+} 
+
+
+.converted_value {
   color: #452B4E;
 }
 
-.conversion-precision {
+.conversion_precision {
   color: #452B4E;
 }
