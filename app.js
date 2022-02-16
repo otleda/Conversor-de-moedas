@@ -38,25 +38,47 @@ Para que o valor contido no parágrafo do item acima não tenha mais de
 dois dígitos após o ponto, você pode usar o método toFixed: 
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
     
-[ ] -- 9 --
+[X] -- 9 --
 Para obter as moedas com os valores já convertidos, use a Exchange rate 
 API: https://www.exchangerate-api.com/;
     
-[ ] -- 10 -- 
+[X] -- 10 -- 
 Para obter a key e fazer requests, você terá que fazer login e escolher
 o plano free. Seus dados de cartão de crédito não serão solicitados.
 */
-
-// 9fc45ef280197701627202b7
 
 //CODING ...
 
 const getSelectCurrencyOneEl = document.querySelector('[data-js="currencyOne"]')
 const getSelectCurrencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
 
-const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD'
-fetch(url)
+const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/UD' //Key API
+
+
+const getErrorMessage = errorType => ({
+    'unsupported-code': 'A moeda NAO existe em nossa base de dados.',
+    'malformed-request' : 'Seu pedido deve seguir essa estrutura https://v6.exchangerate-api.com/v6/YOUR-API-KEY/latest/USD', 
+    'invalid-key'       : 'A chave da API NAO e valida.',
+    'inactive-account'  : 'Seu endereco de email NAO foi confirmado.', 
+    'quota-reached'     : 'Sua conta alcancou o limite de REQUEST permitido em seu plano. '
+})[errorType] || 'NAO foi possivel obter as informacoes.'
+
+const fetchExchangeRate = async () => { 
+    try {
+        const response = await fetch(url)
+        const exChangeRateData = await response.json()
+
+        if(exChangeRateData.result === 'error') {
+            throw new Error(getErrorMessage('oi'))
+        }
+
+    } catch (err) {
+        alert(err.message)
+    }
+}
+fetchExchangeRate()
 
 const optionTag = `<option>Moeda</option>`
 getSelectCurrencyOneEl.innerHTML = optionTag
 getSelectCurrencyTwoEl.innerHTML = optionTag
+
