@@ -51,8 +51,9 @@ o plano free. Seus dados de cartão de crédito não serão solicitados.
 
 const getSelectCurrencyOneEl = document.querySelector('[data-js="currencyOne"]')
 const getSelectCurrencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
+const correnciesContainerEl = document.querySelector('[data-js="currenciesContainer"]')
 
-const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/UD' //Key API
+const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD' //Key API
 
 
 const getErrorMessage = errorType => ({
@@ -66,14 +67,30 @@ const getErrorMessage = errorType => ({
 const fetchExchangeRate = async () => { 
     try {
         const response = await fetch(url)
-        const exChangeRateData = await response.json()
-
-        if(exChangeRateData.result === 'error') {
-            throw new Error(getErrorMessage('oi'))
+   
+        if(!response.ok) {
+            throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
         }
 
+        const exChangeRateData = await response.json()
+   
+        if(exChangeRateData.result === 'error') {
+            throw new Error(getErrorMessage(exChangeRateData['error-type']))
+        }
     } catch (err) {
-        alert(err.message)
+        const div = document.createElement('div')
+        div.classList.add('message_alert')
+        
+        const button = document.createElement('button')
+        button.innerText = 'x'
+        button.classList.add('btn_close')
+        
+        div.textContent = err.message
+        div.appendChild(button)
+        correnciesContainerEl.insertAdjacentElement('afterend', div)
+
+        console.log(div)
+    }
 }
 fetchExchangeRate()
 
