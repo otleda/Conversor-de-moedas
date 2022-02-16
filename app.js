@@ -74,7 +74,6 @@ const fetchExchangeRate = async () => {
 
     } catch (err) {
         alert(err.message)
-    }
 }
 fetchExchangeRate()
 
