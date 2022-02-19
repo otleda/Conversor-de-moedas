@@ -66,11 +66,13 @@ const getErrorMessage = errorType => ({
 const fetchExchangeRate = async () => { 
     try {
         const response = await fetch(url)
-        const exchangeRateData = await response.json()
-
+        
         if(!response.ok) {
             throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
-        }
+        } 
+
+        const exchangeRateData = await response.json()
+        
         if(exchangeRateData.result === 'error') {
             throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
@@ -81,8 +83,8 @@ const fetchExchangeRate = async () => {
         const divMsg = document.createElement('div')
         divMsg.classList.add('message_alert')
 
-        const paragrah = document.createElement('p')
-        divMsg.appendChild(paragrah)
+        const paragraph = document.createElement('p')
+        divMsg.appendChild(paragraph)
         
         const button = document.createElement('button')
         button.classList.add('btn_close')
@@ -90,7 +92,8 @@ const fetchExchangeRate = async () => {
 
         button.addEventListener('click', () => {divMsg.remove()})
         
-        paragrah.innerText = err.message
+        paragraph.innerText = err.message
+        console.log(paragraph);
         divMsg.appendChild(button)
         correnciesContainerEl.insertAdjacentElement('afterend', divMsg)
 
