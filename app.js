@@ -55,9 +55,8 @@ const correnciesContainerEl = document.querySelector('[data-js="currenciesContai
 
 const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD' //Key API
 
-
 const getErrorMessage = errorType => ({
-    'unsupported-code': 'A moeda NAO existe em nossa base de dados.',
+    'unsupported-code'  : 'A moeda NAO existe em nossa base de dados.',
     'malformed-request' : 'Seu pedido deve seguir essa estrutura https://v6.exchangerate-api.com/v6/YOUR-API-KEY/latest/USD', 
     'invalid-key'       : 'A chave da API NAO e valida.',
     'inactive-account'  : 'Seu endereco de email NAO foi confirmado.', 
@@ -67,32 +66,41 @@ const getErrorMessage = errorType => ({
 const fetchExchangeRate = async () => { 
     try {
         const response = await fetch(url)
-   
+        const exchangeRateData = await response.json()
+
         if(!response.ok) {
             throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
         }
-
-        const exChangeRateData = await response.json()
-   
-        if(exChangeRateData.result === 'error') {
-            throw new Error(getErrorMessage(exChangeRateData['error-type']))
+        if(exchangeRateData.result === 'error') {
+            throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
+
+        return exchangeRateData
+
     } catch (err) {
-        const div = document.createElement('div')
-        div.classList.add('message_alert')
+        const divMsg = document.createElement('div')
+        divMsg.classList.add('message_alert')
+
+        const paragrah = document.createElement('p')
+        divMsg.appendChild(paragrah)
         
         const button = document.createElement('button')
-        button.innerText = 'x'
         button.classList.add('btn_close')
-        
-        div.textContent = err.message
-        div.appendChild(button)
-        correnciesContainerEl.insertAdjacentElement('afterend', div)
+        button.innerText = 'x'
 
-        console.log(div)
+        button.addEventListener('click', () => {divMsg.remove()})
+        
+        paragrah.innerText = err.message
+        divMsg.appendChild(button)
+        correnciesContainerEl.insertAdjacentElement('afterend', divMsg)
+
+        console.log(divMsg)
     }
 }
-fetchExchangeRate()
+const init = async () => {
+    console.log(await fetchExchangeRate())
+}
+init()
 
 const optionTag = `<option>Moeda</option>`
 getSelectCurrencyOneEl.innerHTML = optionTag
