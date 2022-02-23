@@ -72,7 +72,6 @@ const fetchExchangeRate = async () => {
         } 
 
         const exchangeRateData = await response.json()
-        
         if(exchangeRateData.result === 'error') {
             throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
@@ -86,26 +85,33 @@ const fetchExchangeRate = async () => {
         const paragraph = document.createElement('p')
         divMsg.appendChild(paragraph)
         
-        const button = document.createElement('button')
-        button.classList.add('btn_close')
-        button.innerText = 'x'
+        const buttonClosed = document.createElement('button')
+        buttonClosed.classList.add('btn_close')
+        buttonClosed.innerText = 'x'
+        buttonClosed.setAttribute('type','button')
 
-        button.addEventListener('click', () => {divMsg.remove()})
+        buttonClosed.addEventListener('click', () => {divMsg.remove()})
         
         paragraph.innerText = err.message
-        console.log(paragraph);
-        divMsg.appendChild(button)
+        divMsg.appendChild(buttonClosed)
         correnciesContainerEl.insertAdjacentElement('afterend', divMsg)
-
-        console.log(divMsg)
     }
 }
 const init = async () => {
-    console.log(await fetchExchangeRate())
+    
+    const exchangeRateDataObj = await fetchExchangeRate()
+
+    const getOptions = (selectCurrency) => {
+        return Object.keys(exchangeRateDataObj.conversion_rates).map((currency) => {
+            return `<option ${currency === selectCurrency ? 'selected': ''}>${currency}</option>`
+    })
+    } 
+
+    getSelectCurrencyOneEl.innerHTML = getOptions('USD')
+    getSelectCurrencyTwoEl.innerHTML = getOptions('BRL')
+    
 }
 init()
 
-const optionTag = `<option>Moeda</option>`
-getSelectCurrencyOneEl.innerHTML = optionTag
-getSelectCurrencyTwoEl.innerHTML = optionTag
+
 
