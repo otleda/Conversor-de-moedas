@@ -53,7 +53,7 @@ const currencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
 const currencyContainerEl = document.querySelector('[data-js="currenciesContainer"]')
 const convertValueEl = document.querySelector('[ data-js="convertedValue"]')
 const conversionPrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
-const currencyOneTimeEl = document.querySelector('[data-js="currencyOneTimes"]')
+const inputCurrencyValueEL = document.querySelector('[data-js="currencyValue"]')
 
 let internalExchangeRateData = {}
 
@@ -70,7 +70,7 @@ const getErrorMessage = errorType => ({
 const fetchExchangeRate = async () => { 
     try {
         const response = await fetch(url)
-        console.log(response);
+        
         if(!response.ok) {
             throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
         } 
@@ -115,17 +115,29 @@ const init = async () => {
 
     currencyOneEl.innerHTML = getOptions('USD')
     currencyTwoEl.innerHTML = getOptions('BRL')
-    
+
     convertValueEl.textContent = exchangeRateDataObj.conversion_rates.BRL.toFixed(2)
-    conversionPrecisionEl.textContent = `1 USD = ${exchangeRateDataObj.conversion_rates.BRL} BRL`
+    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${exchangeRateDataObj.conversion_rates.BRL} BRL`
 }
 
-currencyOneTimeEl.addEventListener('input', event => {
+inputCurrencyValueEL.addEventListener('input', event => {
     convertValueEl.textContent = 
-        event.target.value * 
-        Math.floor(internalExchangeRateData.conversion_rates[currencyTwoEl.value])
+        (event.target.value * internalExchangeRateData.conversion_rates[currencyTwoEl.value])
         .toFixed(2)
 })
+
+currencyTwoEl.addEventListener('input', event => {
+   /*  convertValueEl.textContent = 
+        (internalExchangeRateData.conversion_rates[event.target.value])
+        .toFixed(2) */
+    const convertedValue = internalExchangeRateData.conversion_rates[event.target.value]
+    convertValueEl.textContent = (inputCurrencyValueEL.value * convertedValue).toFixed(2)
+
+    conversionPrecisionEl.textContent = 
+        `1 Dollar (USD) = ${1 * internalExchangeRateData.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
+})
+
+
 
 init()
 

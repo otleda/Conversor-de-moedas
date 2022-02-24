@@ -1,9 +1,11 @@
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
   
 body {
 	background-color: #ffeb3b;
+	font-family: 'Roboto', sans-serif;
 }
 
 .container {
@@ -49,12 +51,16 @@ body {
 }
 
 .converted_value {
-	color: #452b4e;
 	margin: 1em;
+	font-weight: bold;
+	font-size: 1.5em;
+	color: #452b4e;
 }
 
 .conversion_precision {
-	color: #452b4e;
+	font-weight: bold;
+	font-size: .9em;
+	color: #f44336;
 }
 
 .message_alert {
