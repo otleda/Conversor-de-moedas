@@ -9,19 +9,19 @@ Popule os <select> com tags <option> que contém as moedas que podem ser
 convertidas. "BRL" para real brasileiro, "EUR" para euro, "USD" para dollar 
 dos Estados Unidos, etc.
 
-[ ] -- 2 --
+[x] -- 2 --
 O option selecionado por padrão no 1º <select> deve ser "USD" 
 e o option no 2º <select> deve ser "BRL";
       
-[ ] -- 3 -- 
+[x] -- 3 -- 
 O parágrafo com data-js="convertedValue" deve exibir o resultado da 
 conversão de 1 USD para 1 BRL;
 
-[ ] -- 4 --
+[x] -- 4 --
 Quando um novo número for inserido no input com data-js="currencyOneTimes", 
 o parágrafo do item acima deve atualizar seu valor;
 
-[ ] -- 5 -- 
+[x] -- 5 -- 
 O parágrafo com data-js="conversionPrecision" deve conter a conversão 
 apenas x1. Exemplo: 1 USD = 5.0615 BRL;
        
@@ -48,10 +48,14 @@ o plano free. Seus dados de cartão de crédito não serão solicitados.
 */
 
 //CODING ...
+const currencyOneEl = document.querySelector('[data-js="currencyOne"]')
+const currencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
+const currencyContainerEl = document.querySelector('[data-js="currenciesContainer"]')
+const convertValueEl = document.querySelector('[ data-js="convertedValue"]')
+const conversionPrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
+const currencyOneTimeEl = document.querySelector('[data-js="currencyOneTimes"]')
 
-const getSelectCurrencyOneEl = document.querySelector('[data-js="currencyOne"]')
-const getSelectCurrencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
-const correnciesContainerEl = document.querySelector('[data-js="currenciesContainer"]')
+let internalExchangeRateData = {}
 
 const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD' //Key API
 
@@ -66,7 +70,7 @@ const getErrorMessage = errorType => ({
 const fetchExchangeRate = async () => { 
     try {
         const response = await fetch(url)
-        
+        console.log(response);
         if(!response.ok) {
             throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
         } 
@@ -90,27 +94,39 @@ const fetchExchangeRate = async () => {
         buttonClosed.innerText = 'x'
         buttonClosed.setAttribute('type','button')
 
-        buttonClosed.addEventListener('click', () => {divMsg.remove()})
+        buttonClosed.addEventListener('click', () => divMsg.remove())
         
         paragraph.innerText = err.message
         divMsg.appendChild(buttonClosed)
-        correnciesContainerEl.insertAdjacentElement('afterend', divMsg)
+        currencyContainerEl.insertAdjacentElement('afterend', divMsg)
     }
 }
 const init = async () => {
     
     const exchangeRateDataObj = await fetchExchangeRate()
 
+    internalExchangeRateData = {...exchangeRateDataObj}
+
     const getOptions = (selectCurrency) => {
         return Object.keys(exchangeRateDataObj.conversion_rates).map((currency) => {
             return `<option ${currency === selectCurrency ? 'selected': ''}>${currency}</option>`
-    })
+        }).join('')
     } 
 
-    getSelectCurrencyOneEl.innerHTML = getOptions('USD')
-    getSelectCurrencyTwoEl.innerHTML = getOptions('BRL')
+    currencyOneEl.innerHTML = getOptions('USD')
+    currencyTwoEl.innerHTML = getOptions('BRL')
     
+    convertValueEl.textContent = exchangeRateDataObj.conversion_rates.BRL.toFixed(2)
+    conversionPrecisionEl.textContent = `1 USD = ${exchangeRateDataObj.conversion_rates.BRL} BRL`
 }
+
+currencyOneTimeEl.addEventListener('input', event => {
+    convertValueEl.textContent = 
+        event.target.value * 
+        Math.floor(internalExchangeRateData.conversion_rates[currencyTwoEl.value])
+        .toFixed(2)
+})
+
 init()
 
 

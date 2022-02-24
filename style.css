@@ -1,3 +1,7 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+  
 body {
 	background-color: #ffeb3b;
 }
@@ -8,7 +12,10 @@ body {
 	align-items: center;
 	padding: 5em;
 }
-
+.content {
+	display: flex;
+	flex-direction: column;
+}
 .selected {
 	display: flex;
 	flex-wrap: wrap;
@@ -22,31 +29,28 @@ body {
 	border: 1px solid #acaf0c;
 	outline-color: #452b4e;
 	border-radius: 0.5em;
+	cursor: pointer;
 }
 
 .imput_container {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
 	width: 100%;
 }
 .imput_value {
-	width: 330px;
+	width: 160px;
 	padding: 0.7em;
 	margin: 1em;
-	border: 1px solid #acaf0c;
-	outline-color: #452b4e;
+	border: 3px solid #03a9f4;
+	outline-color: #4e432b;
 	border-radius: 0.5em;
-}
-
-@media (max-width: 550px) {
-	.imput_value {
-		width: 138px;
-  	}
+	cursor: pointer;
 }
 
 .converted_value {
 	color: #452b4e;
+	margin: 1em;
 }
 
 .conversion_precision {
@@ -82,4 +86,11 @@ body {
     font-size: 1em;
     font-weight: bold;
     border: 2px solid #452b4e;
+}
+
+
+@media (max-width: 550px) {
+	.imput_container {
+		flex-direction: column
+	}
 }
