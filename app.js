@@ -50,7 +50,7 @@ o plano free. Seus dados de cartão de crédito não serão solicitados.
 //CODING ...
 const currencyOneEl = document.querySelector('[data-js="currencyOne"]')
 const currencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
-const currencyContainerEl = document.querySelector('[data-js="currenciesContainer"]')
+const msgErrorEl = document.querySelector('.msgError')
 const convertValueEl = document.querySelector('[ data-js="convertedValue"]')
 const conversionPrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
 const inputCurrencyValueEL = document.querySelector('[data-js="currencyValue"]')
@@ -61,21 +61,22 @@ const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/
 
 const getErrorMessage = errorType => ({
     'unsupported-code'  : 'A moeda NAO existe em nossa base de dados.',
-    'malformed-request' : 'Seu pedido deve seguir essa estrutura https://v6.exchangerate-api.com/v6/YOUR-API-KEY/latest/USD', 
+    'malformed-request' : 'Seu pedido deve seguir essa estrutura https://v6.exchangerate-ap.com/v6/YOUR-API-KEY/latest/USD', 
     'invalid-key'       : 'A chave da API NAO e valida.',
     'inactive-account'  : 'Seu endereco de email NAO foi confirmado.', 
     'quota-reached'     : 'Sua conta alcancou o limite de REQUEST permitido em seu plano. '
 })[errorType] || 'NAO foi possivel obter as informacoes.'
 
-const fetchExchangeRate = async () => { 
+const fetchExchangeRate = async () => {
     try {
         const response = await fetch(url)
         
-        if(!response.ok) {
+       /*  if(!response.ok) {
             throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
-        } 
+        }  */
 
         const exchangeRateData = await response.json()
+
         if(exchangeRateData.result === 'error') {
             throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
@@ -98,17 +99,18 @@ const fetchExchangeRate = async () => {
         
         paragraph.innerText = err.message
         divMsg.appendChild(buttonClosed)
-        currencyContainerEl.insertAdjacentElement('afterend', divMsg)
+        msgErrorEl.insertAdjacentElement('afterend', divMsg)
     }
 }
+
 const init = async () => {
     
-    const exchangeRateDataObj = await fetchExchangeRate()
+    const getExchangeRateData = await fetchExchangeRate()
 
-    internalExchangeRateData = {...exchangeRateDataObj}
+    internalExchangeRateData = {...getExchangeRateData}
 
     const getOptions = (selectCurrency) => {
-        return Object.keys(exchangeRateDataObj.conversion_rates).map((currency) => {
+        return Object.keys(getExchangeRateData.conversion_rates).map((currency) => {
             return `<option ${currency === selectCurrency ? 'selected': ''}>${currency}</option>`
         }).join('')
     } 
@@ -116,8 +118,8 @@ const init = async () => {
     currencyOneEl.innerHTML = getOptions('USD')
     currencyTwoEl.innerHTML = getOptions('BRL')
 
-    convertValueEl.textContent = exchangeRateDataObj.conversion_rates.BRL.toFixed(2)
-    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${exchangeRateDataObj.conversion_rates.BRL} BRL`
+    convertValueEl.textContent = getExchangeRateData.conversion_rates.BRL.toFixed(2)
+    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${getExchangeRateData.conversion_rates.BRL} BRL`
 }
 
 inputCurrencyValueEL.addEventListener('input', event => {
@@ -127,9 +129,6 @@ inputCurrencyValueEL.addEventListener('input', event => {
 })
 
 currencyTwoEl.addEventListener('input', event => {
-   /*  convertValueEl.textContent = 
-        (internalExchangeRateData.conversion_rates[event.target.value])
-        .toFixed(2) */
     const convertedValue = internalExchangeRateData.conversion_rates[event.target.value]
     convertValueEl.textContent = (inputCurrencyValueEL.value * convertedValue).toFixed(2)
 
@@ -137,9 +136,12 @@ currencyTwoEl.addEventListener('input', event => {
         `1 Dollar (USD) = ${1 * internalExchangeRateData.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 })
 
-
+currencyOneEl.addEventListener('input', () => {
+    console.log('ok')  
+})
 
 init()
 
 
 
+ 
