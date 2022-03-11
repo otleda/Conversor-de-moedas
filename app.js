@@ -25,15 +25,15 @@ o parágrafo do item acima deve atualizar seu valor;
 O parágrafo com data-js="conversionPrecision" deve conter a conversão 
 apenas x1. Exemplo: 1 USD = 5.0615 BRL;
        
-[ ] -- 6 -- 
+[x] -- 6 -- 
 O conteúdo do parágrafo do item acima deve ser atualizado à cada 
 mudança nos selects;
      
-[ ] -- 7 --
+[x] -- 7 --
 O conteúdo do parágrafo data-js="converted-value" deve ser atualizado à
 cada mudança nos selects e/ou no input com data-js="currency-one-times";
       
-[ ] -- 8 --
+[x] -- 8 --
 Para que o valor contido no parágrafo do item acima não tenha mais de 
 dois dígitos após o ponto, você pode usar o método toFixed: 
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
@@ -59,7 +59,7 @@ let internalExchangeRateData = {}
 
 const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD' //Key API
 
-const getErrorMessage = errorType => ({
+const getErrorMessage = errorType => ({ 
     'unsupported-code'  : 'A moeda NAO existe em nossa base de dados.',
     'malformed-request' : 'Seu pedido deve seguir essa estrutura https://v6.exchangerate-ap.com/v6/YOUR-API-KEY/latest/USD', 
     'invalid-key'       : 'A chave da API NAO e valida.',
@@ -71,33 +71,30 @@ const fetchExchangeRate = async () => {
     try {
         const response = await fetch(url)
         
-       /*  if(!response.ok) {
-            throw new Error('Sua conexao falhou. NAO foi possivel obter as informacoes.')
-        }  */
-
         const exchangeRateData = await response.json()
-
+       
         if(exchangeRateData.result === 'error') {
             throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
-
+                
         return exchangeRateData
 
     } catch (err) {
         const divMsg = document.createElement('div')
         divMsg.classList.add('message_alert')
-
+        
         const paragraph = document.createElement('p')
         divMsg.appendChild(paragraph)
         
         const buttonClosed = document.createElement('button')
+
         buttonClosed.classList.add('btn_close')
         buttonClosed.innerText = 'x'
         buttonClosed.setAttribute('type','button')
-
         buttonClosed.addEventListener('click', () => divMsg.remove())
         
         paragraph.innerText = err.message
+        
         divMsg.appendChild(buttonClosed)
         msgErrorEl.insertAdjacentElement('afterend', divMsg)
     }
@@ -109,11 +106,10 @@ const init = async () => {
 
     internalExchangeRateData = {...getExchangeRateData}
 
-    const getOptions = (selectCurrency) => {
-        return Object.keys(getExchangeRateData.conversion_rates).map((currency) => {
-            return `<option ${currency === selectCurrency ? 'selected': ''}>${currency}</option>`
-        }).join('')
-    } 
+    const getOptions = selectCurrency => Object.keys(getExchangeRateData.conversion_rates)
+        .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
+        .join('')
+    
 
     currencyOneEl.innerHTML = getOptions('USD')
     currencyTwoEl.innerHTML = getOptions('BRL')
@@ -141,7 +137,6 @@ currencyOneEl.addEventListener('input', () => {
 })
 
 init()
-
 
 
  
