@@ -76,7 +76,7 @@ const fetchExchangeRate = async () => {
         if(exchangeRateData.result === 'error') {
             throw new Error(getErrorMessage(exchangeRateData['error-type']))
         }
-                
+                 
         return exchangeRateData
 
     } catch (err) {
@@ -117,13 +117,14 @@ const init = async () => {
     convertValueEl.textContent = getExchangeRateData.conversion_rates.BRL.toFixed(2)
     conversionPrecisionEl.textContent = `1 Dollar (USD) = ${getExchangeRateData.conversion_rates.BRL} BRL`
 }
-
+//Entry fo values
 inputCurrencyValueEL.addEventListener('input', event => {
     convertValueEl.textContent = 
         (event.target.value * internalExchangeRateData.conversion_rates[currencyTwoEl.value])
         .toFixed(2)
 })
 
+//Select 01
 currencyTwoEl.addEventListener('input', event => {
     const convertedValue = internalExchangeRateData.conversion_rates[event.target.value]
     convertValueEl.textContent = (inputCurrencyValueEL.value * convertedValue).toFixed(2)
@@ -132,6 +133,7 @@ currencyTwoEl.addEventListener('input', event => {
         `1 Dollar (USD) = ${1 * internalExchangeRateData.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 })
 
+//Select 02
 currencyOneEl.addEventListener('input', () => {
     console.log('ok')  
 })
