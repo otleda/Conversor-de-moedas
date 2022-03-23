@@ -45,6 +45,10 @@ API: https://www.exchangerate-api.com/;
 [X] -- 10 -- 
 Para obter a key e fazer requests, você terá que fazer login e escolher
 o plano free. Seus dados de cartão de crédito não serão solicitados.
+
+[ ] -- 11 --
+Tornar a Moeda Base dinâmica, vindo da API, e fazer que venha como um parametro de uma funcao.
+
 */
 
 //CODING ...
@@ -57,7 +61,7 @@ const inputCurrencyValueEL = document.querySelector('[data-js="currencyValue"]')
 
 let internalExchangeRateData = {}
 
-const url = 'https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/USD' //Key API
+const getUrl = currencyBase => `https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/${currencyBase}` //Key API
 
 const getErrorMessage = errorType => ({ 
     'unsupported-code'  : 'A moeda NAO existe em nossa base de dados.',
@@ -67,10 +71,9 @@ const getErrorMessage = errorType => ({
     'quota-reached'     : 'Sua conta alcancou o limite de REQUEST permitido em seu plano. '
 })[errorType] || 'NAO foi possivel obter as informacoes.'
 
-const fetchExchangeRate = async () => {
+const fetchExchangeRate = async url => {
     try {
         const response = await fetch(url)
-        
         const exchangeRateData = await response.json()
        
         if(exchangeRateData.result === 'error') {
@@ -78,7 +81,7 @@ const fetchExchangeRate = async () => {
         }
                  
         return exchangeRateData
-
+        
     } catch (err) {
         const divMsg = document.createElement('div')
         divMsg.classList.add('message_alert')
@@ -102,11 +105,9 @@ const fetchExchangeRate = async () => {
 
 const init = async () => {
     
-    const getExchangeRateData = await fetchExchangeRate()
+    internalExchangeRateData = {...(await fetchExchangeRate(getUrl('USD')))}
 
-    internalExchangeRateData = {...getExchangeRateData}
-
-    const getOptions = selectCurrency => Object.keys(getExchangeRateData.conversion_rates)
+    const getOptions = selectCurrency => Object.keys(internalExchangeRateData.conversion_rates)
         .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
         .join('')
     
@@ -114,8 +115,8 @@ const init = async () => {
     currencyOneEl.innerHTML = getOptions('USD')
     currencyTwoEl.innerHTML = getOptions('BRL')
 
-    convertValueEl.textContent = getExchangeRateData.conversion_rates.BRL.toFixed(2)
-    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${getExchangeRateData.conversion_rates.BRL} BRL`
+    convertValueEl.textContent = internalExchangeRateData.conversion_rates.BRL.toFixed(2)
+    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${internalExchangeRateData.conversion_rates.BRL} BRL`
 }
 //Entry fo values
 inputCurrencyValueEL.addEventListener('input', event => {
@@ -124,7 +125,7 @@ inputCurrencyValueEL.addEventListener('input', event => {
         .toFixed(2)
 })
 
-//Select 01
+//Select 02
 currencyTwoEl.addEventListener('input', event => {
     const convertedValue = internalExchangeRateData.conversion_rates[event.target.value]
     convertValueEl.textContent = (inputCurrencyValueEL.value * convertedValue).toFixed(2)
@@ -133,10 +134,13 @@ currencyTwoEl.addEventListener('input', event => {
         `1 Dollar (USD) = ${1 * internalExchangeRateData.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 })
 
-//Select 02
-currencyOneEl.addEventListener('input', () => {
-    console.log('ok')  
-})
+/* Select 01 
+
+- aqui vai ter de obter um novo feth, pois a taxa vai ser baseada em uma
+nova moeda, ou seja vai ter de fazer um novo request. por padrao a API a moeda base é o "USD" */
+currencyOneEl.addEventListener('input', async event => {
+    internalExchangeRateData = {... (await fetchExchangeRate(getUrl(await event.target.value))) }  
+})   
 
 init()
 
