@@ -56,10 +56,10 @@ const currencyOneEl = document.querySelector('[data-js="currencyOne"]')
 const currencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
 const msgErrorEl = document.querySelector('.msgError')
 const convertValueEl = document.querySelector('[ data-js="convertedValue"]')
-const conversionPrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
-const inputCurrencyValueEL = document.querySelector('[data-js="currencyValue"]')
+const valuePrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
+const inputValueEL = document.querySelector('[data-js="currencyValue"]')
 
-let internalExchangeRateData = {}
+let internalExchangeRate = {}
 
 const getUrl = currencyBase => `https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/${currencyBase}` //Key API
 
@@ -105,9 +105,9 @@ const fetchExchangeRate = async url => {
 
 const init = async () => {
     
-    internalExchangeRateData = {...(await fetchExchangeRate(getUrl('USD')))}
+    internalExchangeRate = {...(await fetchExchangeRate(getUrl('USD')))}
 
-    const getOptions = selectCurrency => Object.keys(internalExchangeRateData.conversion_rates)
+    const getOptions = selectCurrency => Object.keys(internalExchangeRate.conversion_rates)
         .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
         .join('')
     
@@ -115,31 +115,33 @@ const init = async () => {
     currencyOneEl.innerHTML = getOptions('USD')
     currencyTwoEl.innerHTML = getOptions('BRL')
 
-    convertValueEl.textContent = internalExchangeRateData.conversion_rates.BRL.toFixed(2)
-    conversionPrecisionEl.textContent = `1 Dollar (USD) = ${internalExchangeRateData.conversion_rates.BRL} BRL`
+    convertValueEl.textContent = internalExchangeRate.conversion_rates.BRL.toFixed(2)
+    valuePrecisionEl.textContent = `1 Dollar (USD) = ${internalExchangeRate.conversion_rates.BRL} BRL`
 }
 //Entry fo values
-inputCurrencyValueEL.addEventListener('input', event => {
+inputValueEL.addEventListener('input', event => {
     convertValueEl.textContent = 
-        (event.target.value * internalExchangeRateData.conversion_rates[currencyTwoEl.value])
+        (event.target.value * internalExchangeRate.conversion_rates[currencyTwoEl.value])
         .toFixed(2)
 })
 
 //Select 02
 currencyTwoEl.addEventListener('input', event => {
-    const convertedValue = internalExchangeRateData.conversion_rates[event.target.value]
-    convertValueEl.textContent = (inputCurrencyValueEL.value * convertedValue).toFixed(2)
+    const convertedValue = internalExchangeRate.conversion_rates[event.target.value]
 
-    conversionPrecisionEl.textContent = 
-        `1 Dollar (USD) = ${1 * internalExchangeRateData.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
+    convertValueEl.textContent = (inputValueEL.value * convertedValue).toFixed(2)
+    valuePrecisionEl.textContent = `1 Dollar (USD) = ${1 * internalExchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 })
 
-/* Select 01 
-
+/* Select 01    
 - aqui vai ter de obter um novo feth, pois a taxa vai ser baseada em uma
 nova moeda, ou seja vai ter de fazer um novo request. por padrao a API a moeda base é o "USD" */
 currencyOneEl.addEventListener('input', async event => {
-    internalExchangeRateData = {... (await fetchExchangeRate(getUrl(await event.target.value))) }  
+    internalExchangeRate = {...(await fetchExchangeRate(getUrl(await event.target.value))) } 
+    
+    convertValueEl.textContent = inputValueEL.value * (internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
+    
+    
 })   
 
 init()
