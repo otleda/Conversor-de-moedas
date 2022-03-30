@@ -48,10 +48,28 @@ o plano free. Seus dados de cartão de crédito não serão solicitados.
 
 [ ] -- 11 --
 Tornar a Moeda Base dinâmica, vindo da API, e fazer que venha como um parametro de uma funcao.
-
 */
 
 //CODING ...
+
+const state = (() => {
+
+    let exchangeRate = {}
+
+    return {
+        getExchangeRate: () => exchangeRate,
+        setExchangeRate: newExchangeRate => {
+            if(!newExchangeRate.conversion_rates) {
+                console.log('Preciso ter uma propridade conversion_rates.')
+                return 
+            }
+            exchangeRate = newExchangeRate
+            return exchangeRate
+        }
+    }
+})()
+
+
 const currencyOneEl = document.querySelector('[data-js="currencyOne"]')
 const currencyTwoEl = document.querySelector('[data-js="currencyTwo"]')
 const msgErrorEl = document.querySelector('.msgError')
@@ -59,7 +77,7 @@ const convertValueEl = document.querySelector('[ data-js="convertedValue"]')
 const valuePrecisionEl = document.querySelector('[data-js="conversionPrecision"]')
 const inputValueEL = document.querySelector('[data-js="currencyValue"]')
 
-let internalExchangeRate = {}
+//let internalExchangeRate = {}
 
 const getUrl = currencyBase => `https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/${currencyBase}` //Key API
 
@@ -109,23 +127,31 @@ const fetchExchangeRate = async url => {
     }
 }
 
-const showInitialInfo = () => {
-    const getOptions = selectCurrency => Object.keys(internalExchangeRate.conversion_rates)
+//Function initial information 
+const showInitialInfo = exchangeRate => {
+    const getOptions = selectCurrency => Object.keys(exchangeRate.conversion_rates)
             .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
             .join('')
     
         currencyOneEl.innerHTML = getOptions('USD')
         currencyTwoEl.innerHTML = getOptions('BRL')
-        convertValueEl.textContent = internalExchangeRate.conversion_rates.BRL.toFixed(2)
-        valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${internalExchangeRate.conversion_rates.BRL} BRL`
+        convertValueEl.textContent = exchangeRate.conversion_rates.BRL.toFixed(2)
+        valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${exchangeRate.conversion_rates.BRL} BRL`
 }
 
+//Function Initial to app
 const init = async () => {
-    internalExchangeRate = {...(await fetchExchangeRate(getUrl('USD')))}
+    const exchangeRate = state.setExchangeRate(await fetchExchangeRate(getUrl('USD')))
 
-    if(internalExchangeRate.conversion_rates) {
-        showInitialInfo()
+    if(exchangeRate.conversion_rates) {
+        showInitialInfo(exchangeRate)
     }
+}
+
+//Function Updates to selected
+const showUpdateRates = () => {
+    convertValueEl.textContent = inputValueEL.value * (internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
+    valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${1 * internalExchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 }
 
 //Entry fo values
@@ -133,26 +159,16 @@ inputValueEL.addEventListener('input', event => {
     convertValueEl.textContent = (event.target.value * internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
 })
 
-//Select 02
-currencyTwoEl.addEventListener('input', () => {
-    const currencyTwoValue = internalExchangeRate.conversion_rates[currencyTwoEl.value]
-
-    convertValueEl.textContent = (inputValueEL.value * currencyTwoValue).toFixed(2)
-    valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${1 * internalExchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
-})
-
-/* Select 01    
-- aqui vai ter de obter um novo feth, pois a taxa vai ser baseada em uma
-nova moeda, ou seja vai ter de fazer um novo request. por padrao a API a moeda base é o "USD" */
-currencyOneEl.addEventListener('input', async event => {''
+//Select 01    
+//aqui vai ter de obter um novo feth, pois a taxa vai ser baseada em uma
+//nova moeda, ou seja vai ter de fazer um novo request. por padrao a API a moeda base é o "USD" 
+currencyOneEl.addEventListener('input', async event => {
     internalExchangeRate = {...(await fetchExchangeRate(getUrl(await event.target.value))) } 
-    
-    convertValueEl.textContent = inputValueEL.value * (internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
-    valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${1 * internalExchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
-    
+    showUpdateRates()
+  
 })   
 
+//Select 02
+currencyTwoEl.addEventListener('input', showUpdateRates)
+
 init()
-
-
- 
