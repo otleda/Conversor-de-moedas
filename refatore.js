@@ -71,6 +71,28 @@ const getErrorMessage = errorType => ({
     'quota-reached'     : 'Sua conta alcancou o limite de REQUEST permitido em seu plano. '
 })[errorType] || 'NAO foi possivel obter as informacoes.'
 
+// Function Msg Error to DOM
+const showAlert = err => {
+    const divMsg = document.createElement('div')
+    divMsg.classList.add('message_alert')
+    
+    const paragraph = document.createElement('p')
+    divMsg.appendChild(paragraph)
+    
+    const buttonClosed = document.createElement('button')
+
+    buttonClosed.classList.add('btn_close')
+    buttonClosed.innerText = 'x'
+    buttonClosed.setAttribute('type','button')
+    buttonClosed.addEventListener('click', () => divMsg.remove())
+    
+    paragraph.innerText = err.message
+    
+    divMsg.appendChild(buttonClosed)
+    msgErrorEl.insertAdjacentElement('afterend', divMsg)
+}
+
+//Function to feth Exchange
 const fetchExchangeRate = async url => {
     try {
         const response = await fetch(url)
@@ -83,60 +105,46 @@ const fetchExchangeRate = async url => {
         return exchangeRateData
         
     } catch (err) {
-        const divMsg = document.createElement('div')
-        divMsg.classList.add('message_alert')
-        
-        const paragraph = document.createElement('p')
-        divMsg.appendChild(paragraph)
-        
-        const buttonClosed = document.createElement('button')
-
-        buttonClosed.classList.add('btn_close')
-        buttonClosed.innerText = 'x'
-        buttonClosed.setAttribute('type','button')
-        buttonClosed.addEventListener('click', () => divMsg.remove())
-        
-        paragraph.innerText = err.message
-        
-        divMsg.appendChild(buttonClosed)
-        msgErrorEl.insertAdjacentElement('afterend', divMsg)
+        showAlert(err)
     }
 }
 
-const init = async () => {
+const showInitialInfo = () => {
+    const getOptions = selectCurrency => Object.keys(internalExchangeRate.conversion_rates)
+            .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
+            .join('')
     
+        currencyOneEl.innerHTML = getOptions('USD')
+        currencyTwoEl.innerHTML = getOptions('BRL')
+        convertValueEl.textContent = internalExchangeRate.conversion_rates.BRL.toFixed(2)
+        valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${internalExchangeRate.conversion_rates.BRL} BRL`
+}
+
+const init = async () => {
     internalExchangeRate = {...(await fetchExchangeRate(getUrl('USD')))}
 
-    const getOptions = selectCurrency => Object.keys(internalExchangeRate.conversion_rates)
-        .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
-        .join('')
-    
-
-    currencyOneEl.innerHTML = getOptions('USD')
-    currencyTwoEl.innerHTML = getOptions('BRL')
-
-    convertValueEl.textContent = internalExchangeRate.conversion_rates.BRL.toFixed(2)
-    valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${internalExchangeRate.conversion_rates.BRL} BRL`
+    if(internalExchangeRate.conversion_rates) {
+        showInitialInfo()
+    }
 }
+
 //Entry fo values
 inputValueEL.addEventListener('input', event => {
-    convertValueEl.textContent = 
-        (event.target.value * internalExchangeRate.conversion_rates[currencyTwoEl.value])
-        .toFixed(2)
+    convertValueEl.textContent = (event.target.value * internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
 })
 
 //Select 02
-currencyTwoEl.addEventListener('input', event => {
-    const convertedValue = internalExchangeRate.conversion_rates[event.target.value]
+currencyTwoEl.addEventListener('input', () => {
+    const currencyTwoValue = internalExchangeRate.conversion_rates[currencyTwoEl.value]
 
-    convertValueEl.textContent = (inputValueEL.value * convertedValue).toFixed(2)
+    convertValueEl.textContent = (inputValueEL.value * currencyTwoValue).toFixed(2)
     valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${1 * internalExchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 })
 
 /* Select 01    
 - aqui vai ter de obter um novo feth, pois a taxa vai ser baseada em uma
 nova moeda, ou seja vai ter de fazer um novo request. por padrao a API a moeda base é o "USD" */
-currencyOneEl.addEventListener('input', async event => {
+currencyOneEl.addEventListener('input', async event => {''
     internalExchangeRate = {...(await fetchExchangeRate(getUrl(await event.target.value))) } 
     
     convertValueEl.textContent = inputValueEL.value * (internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
