@@ -57,7 +57,7 @@ const getErrorMessage = errorType => ({
     'quota-reached'     : 'Sua conta alcancou o limite de REQUEST permitido em seu plano. '
 })[errorType] || 'NAO foi possivel obter as informacoes.'
 
-
+// FETCH EXCHANGE RATE AND FORMATTING TO JSON 
 const fetchExchangeRate = async url => {
     try {
         const response = await fetch(url)
@@ -84,6 +84,7 @@ const showInitialInfo = exchangeRate => {
         valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${exchangeRate.conversion_rates.BRL} BRL`
 }
 
+// FUNCTION INITIAL
 const init = async () => {
     const exchangeRate = state.setExchangeRate(await fetchExchangeRate(getUrl('USD')))
 
@@ -94,6 +95,7 @@ const init = async () => {
 
 // DATA UPDATE ON CURRENCY EXCHANGE
 const showUpdateRates = exchangeRate => {
+    console.log('log', exchangeRate)
     convertValueEl.textContent = inputValueEL.value * (exchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
     valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${1 * exchangeRate.conversion_rates[currencyTwoEl.value]} ${currencyTwoEl.value}`
 }
@@ -111,6 +113,9 @@ currencyOneEl.addEventListener('input', async event => {
 })   
 
 // 02 SELECT
-currencyTwoEl.addEventListener('input', showUpdateRates(exchangeRate))
+currencyTwoEl.addEventListener('input', () => {
+    const exchangeRate = state.getExchangeRate()
+    showUpdateRates(exchangeRate)
+})
 
 init()
