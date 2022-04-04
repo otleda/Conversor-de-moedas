@@ -46,7 +46,8 @@ const state = (() => {
 })()
 
 // FUNCTION RECEIVES URL FROM API
-const getUrl = currencyBase => `https://v6.exchangerate-api.com/v6/9fc45ef280197701627202b7/latest/${currencyBase}` //Key API
+const keyAPI = '9fc45ef280197701627202b7'
+const getUrl = currencyBase => `https://v6.exchangerate-api.com/v6/${keyAPI}/latest/${currencyBase}` //Key API
 
 // MENSAGEE ERROR TYPE
 const getErrorMessage = errorType => ({ 
@@ -64,43 +65,31 @@ const fetchExchangeRate = async url => {
         const exchangeRateData = await response.json()
        
         if(exchangeRateData.result === 'error') {
-            throw new Error(getErrorMessage(exchangeRateData['error-type']))
+            const errorMessage = getErrorMessage(exchangeRateData['error-type']) 
+            throw new Error(errorMessage)
         }
-        return exchangeRateData
+        return state.setExchangeRate(exchangeRateData)
         
-    } catch (err) {
+    } catch (err) { 
         showAlert(err)
     }
 }
 
-const showInitialInfo = ({ conversion_rates }) => { 
-    const getOptions = selectCurrency => Object.keys(conversion_rates)
-            .map(currency => `<option ${currency === selectCurrency ? 'selected': ''}> ${currency} </option>`)
-            .join('')
-    
-        currencyOneEl.innerHTML = getOptions('USD')
-        currencyTwoEl.innerHTML = getOptions('BRL')
-        convertValueEl.textContent = conversion_rates.BRL.toFixed(2)
-        valuePrecisionEl.textContent = `1 ${currencyOneEl.value} = ${conversion_rates.BRL} BRL`
+const getOptions = (selectCurrency, conversion_rates ) => {
+    const setSelectAtributes = currency => currency === selectCurrency ? 'selected': ''
+
+    return Object.keys(conversion_rates)
+        .map(currency => `<option ${setSelectAtributes(currency)}> ${currency} </option>`)
+        .join('')
 }
 
-// FUNCTION INITIAL
-const init = async () => {
-    const url = getUrl('USD')
-    const fetchExchageRateAPI = await fetchExchangeRate(url)
-    const exchangeRate = state.setExchangeRate(fetchExchageRateAPI)
-
-    if(exchangeRate && exchangeRate.conversion_rates) {
-        showInitialInfo(exchangeRate)
-    }
-}
-
-const getMultipierExchangeRate = conversion_rates => {
+// FUNCTION SECUNDARY
+const getMultiplierExchangeRate = conversion_rates => {
     const currencyTwo = conversion_rates[currencyTwoEl.value]
     return (inputValueEL.value * currencyTwo).toFixed(2)
-
 }
 
+// FUNCTION SECUNDARY
 const getPrecisionExchangeRate = conversion_rates => {
     const currencTwo = conversion_rates[currencyTwoEl.value]
     return `1 ${currencyOneEl.value} = ${1 * currencTwo} ${currencyTwoEl.value}`
@@ -108,21 +97,38 @@ const getPrecisionExchangeRate = conversion_rates => {
 
 // DATA UPDATE ON CURRENCY EXCHANGE
 const showUpdateRates = ({ conversion_rates }) => {
-    convertValueEl.textContent = getMultipierExchangeRate(conversion_rates)
+    convertValueEl.textContent = getMultiplierExchangeRate(conversion_rates)
     valuePrecisionEl.textContent = getPrecisionExchangeRate(conversion_rates) 
+}
+
+// SHOWING THE INITIAL INFORMATION IN THE DOM
+const showInitialInfo = ({ conversion_rates }) => { 
+    currencyOneEl.innerHTML = getOptions('USD', conversion_rates)
+    currencyTwoEl.innerHTML = getOptions('BRL', conversion_rates)
+
+    showUpdateRates({ conversion_rates }) // { props } Shorthand Property names
+}
+
+// FUNCTION INITIAL
+const init = async () => {
+    const url = getUrl('USD')
+    const exchangeRate = await fetchExchangeRate(url)
+
+    if(exchangeRate && exchangeRate.conversion_rates) {
+        showInitialInfo(exchangeRate)
+    }
 }
 
 //IMPUT
 inputValueEL.addEventListener('input', () => {
     const { conversion_rates } = state.getExchangeRate()
-    convertValueEl.textContent = getMultipierExchangeRate(conversion_rates)
+    convertValueEl.textContent = getMultiplierExchangeRate(conversion_rates)
 })
 
 // 01 SELECT 
 currencyOneEl.addEventListener('input', async event => {
     const url = getUrl(event.target.value)
-    const newExchangeRate = await fetchExchangeRate(url)
-    const exchangeRate = state.setExchangeRate(newExchangeRate)
+    const exchangeRate = await fetchExchangeRate(url)
     
     showUpdateRates(exchangeRate)
 })   
